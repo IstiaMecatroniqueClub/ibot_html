@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<script type="text/javascript" src="easeljs.min.js"></script>
+<script type="text/javascript" src="eventemitter2.min.js"></script>
+<script type="text/javascript" src="roslib.min.js"></script>
+<script type="text/javascript" src="ros2d.min.js"></script>
+
+<script type="text/javascript" type="text/javascript">
+  /**
+   * Setup all visualization elements when the page is loaded.
+   */
+    var flag=0;
+    var pp = {
+        x : 0,
+        y : 0
+    };
+
+  function init() {
+    // Connect to ROS.
+    var ros = new ROSLIB.Ros({
+      url : 'ws://192.168.49.1:9090'
+    });
+
+    // Create the main viewer.
+    var viewer = new ROS2D.Viewer({
+      divID : 'map',
+      width : 500,
+      height : 500
+    });
+
+    // Setup the map client.
+    var gridClient = new ROS2D.OccupancyGridClient({
+      ros : ros,
+      continuous : true,
+      rootObject : viewer.scene
+    });
+
+
+    // to draw the path
+    var pose_listener = new ROSLIB.Topic({
+        ros : ros,
+        name : '/slam_out_pose',
+        messageType : 'geometry_msgs/PoseStamped'
+    });
+
+    var path_route = new ROS2D.TraceShape({
+    });
+
+    pose_listener.subscribe(function(poseStamped){
+        pp.x = poseStamped.pose.position.x;
+        pp.y = poseStamped.pose.position.y;
+        var test = new ROSLIB.Pose();
+        path_route.addPose(test);
+    });
+
+
+
+    // Scale the canvas to fit to the map
+
+    gridClient.on('change', function(){
+        if(flag==0){
+            var zoom = 1;
+            flag=1;
+          viewer.scaleToDimensions(gridClient.currentGrid.width/zoom,gridClient.currentGrid.height/zoom);
+          viewer.shift(gridClient.currentGrid.pose.position.x/zoom,gridClient.currentGrid.pose.position.y/zoom);
+        }
+    viewer.scene.addChild(path_route);
+    });
+  }
+</script>
+</head>
+
+<body onload="init()">
+  <h1>Simple Map Example</h1>
+  <div id="map"></div>
+</body>
+</html>
