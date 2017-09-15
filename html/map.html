@@ -34,6 +34,7 @@
     // Setup the map client.
     var gridClient = new ROS2D.OccupancyGridClient({
       ros : ros,
+      topic : 'mapSlamOmatic',
       continuous : true,
       rootObject : viewer.scene
     });
@@ -62,7 +63,7 @@
 
     gridClient.on('change', function(){
         if(flag==0){
-            var zoom = 1;
+            var zoom = 2;
             flag=1;
           viewer.scaleToDimensions(gridClient.currentGrid.width/zoom,gridClient.currentGrid.height/zoom);
           viewer.shift(gridClient.currentGrid.pose.position.x/zoom,gridClient.currentGrid.pose.position.y/zoom);
@@ -74,7 +75,7 @@
 </head>
 
 <body onload="init()">
-  <h1>Simple Map Example</h1>
+  <h1>IstiABot - SLAM</h1>
   <div id="map"></div>
 </body>
 </html>
